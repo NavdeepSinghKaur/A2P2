@@ -1,6 +1,6 @@
 package inscaparrella.game;
 
-public class Main {
+public class CastleDefenseMain {
     public static void main(String[] args) {
         System.out.println("Hello world");
     }
