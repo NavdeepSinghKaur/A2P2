@@ -25,13 +25,36 @@ public class CastleDefenseMain {
         return sc.nextInt();
     }
 
-    public static void board() {
-        
-    }
-
     public static void main(String[] args) {
-        difficultyMenu();
-        sc.close();
+        int menuOption = difficultyMenu();
+        boolean exitInitialMenu = false;
+
+        while(!exitInitialMenu) {
+            if (menuOption == 0) {
+                System.out.println("Has elegit la opció: " + menuOption + " El joc es tancarà inmediatament.");
+                sc.close();
+                exitInitialMenu = true;
+            }
+            else if (menuOption == 1) {
+                System.out.println("Has elegit la opció: " + menuOption + " jugaràs en mode fàcil.");
+                exitInitialMenu = true;
+
+            }
+            else if (menuOption == 2) {
+                System.out.println("Has elegit la opció: " + menuOption + " jugaràs en mode normal.");
+                exitInitialMenu = true;
+
+            }
+            else if (menuOption == 3) {
+                System.out.println("Has elegit la opció: " + menuOption + " jugaràs en mode difícil.");
+                exitInitialMenu = true;
+
+            }
+            else {
+                System.out.println("Opció invàlida, torna a intentar-ho.");
+                menuOption = difficultyMenu();
+            }
+        }
     }
 
 }
