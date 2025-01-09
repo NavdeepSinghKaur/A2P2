@@ -1,5 +1,6 @@
 package inscaparrella.game;
 import java.sql.SQLOutput;
+import java.sql.Time;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -21,29 +22,30 @@ public class BoardMain {
         int tableDimensions = random.nextInt(10, 15);
         int kingPosition;
         int towerX = 0;
-        int towerY;
+        int towerY = 0;
         boolean wrongTowerPositionX = true;
         boolean wrongTowerPositionY = true;
         String input;
 
-        // KING
+        // KING POSITION
         kingPosition = (tableDimensions/2);
+
 
         // Board
         // WARNING: check if tower in same coordinate as king
 
         // TOWER
+
+        // CONTITION TO AVOID TOWER TO BE OVER KING
         System.out.println("Dimensions de la taula: " + tableDimensions);
         while (wrongTowerPositionX) {
             System.out.println("Fila torre: ");
             towerX = sc.nextInt();
-            if (towerX == tableDimensions) {
+            if (towerX == tableDimensions || towerX == 0) {
                 System.out.println("La posició de la torre no pot estar als marges, torna a intentar-ho");
-            }
-            else if (towerX > tableDimensions || towerX < 0) {
+            } else if (towerX > tableDimensions || towerX < 0) {
                 System.out.println("Introdueix un número válid que estigui dins de les dimensions.");
             }
-
             else {
                 wrongTowerPositionX = false;
             }
@@ -52,65 +54,116 @@ public class BoardMain {
         while (wrongTowerPositionY) {
             System.out.println("Columna torre: ");
             towerY = sc.nextInt();
-            if (towerY == tableDimensions) {
+            if (towerY == tableDimensions || towerY == 0) {
                 System.out.println("La posició de la torre no pot estar als marges, torna a intentar-ho");
-            }
-            else if (towerY > tableDimensions || towerY < 0) {
+            } else if (towerY == kingPosition && towerX == kingPosition) {
+                System.out.println("La torre està sobre el castell, torna a intentar-ho");
+            } else if (towerY > tableDimensions || towerY < 0) {
                 System.out.println("Introdueix un número válid que estigui dins de les dimensions.");
-            }
-            else {
+            } else {
                 wrongTowerPositionY = false;
             }
         }
 
-        System.out.println("Columna torre: ");
-        towerY = sc.nextInt();
+        //Enemies
+        boolean borderOnX = random.nextBoolean();
+        boolean attackTower = random.nextBoolean();
+        int whichBorder = random.nextInt(0, 4); // clockwise, starts on top -> output 0: enemy appears on upper wall and so on...
+        int[] enemyTower = {0, 0};
+
+        // calculates where enemy will appear
+        if (whichBorder == 0) {
+            enemyTower[1] = random.nextInt(0, tableDimensions);
+        } else if (whichBorder == 1) {
+            enemyTower[0] = tableDimensions;
+            enemyTower[1] = random.nextInt(0, tableDimensions);
+        } else if (whichBorder == 2) {
+            enemyTower[0] = random.nextInt(0, tableDimensions);
+            enemyTower[1] = tableDimensions;
+        } else {
+            enemyTower[0] = random.nextInt(0, tableDimensions);
+        }
+
+        System.out.println("Enemy position (x, y): " + enemyTower[0] + " " + enemyTower[1]);
 
         // TABLE
-        System.out.print("   ");
-        for(int i = 0; i < tableDimensions; i++) {
-            if (i <= 9) {
-                System.out.print(i + "  ");
+        outerloop: while (true) {
+            boolean moveAxisX = random.nextBoolean();
+
+            if (moveAxisX) {
+                if (enemyTower[0] - kingPosition == 0 && Math.abs(enemyTower[1]-kingPosition)<= 1) {
+                        System.out.println("King has been killed by enemy tower");
+                        break outerloop;
+                } else if (enemyTower[0] - kingPosition > 0) {
+                    enemyTower[0]--;
+                } else {
+                    enemyTower[0]++;
+                }
             } else {
-                System.out.print(i + " ");
-            }
-        }
-        System.out.println();
-
-        for(int i = 0; i < tableDimensions; i++) {
-            if (i <= 9) {
-                System.out.print(" " + i);
-            } else {
-                System.out.print(i);
-            }
-
-            for(int j = 0; j < tableDimensions; j++) {
-                if (kingPosition-1 == j && kingPosition-1 == i) {
-                    System.out.print(GREEN_BOLD + " C " + RESET);
+                if (enemyTower[1] - kingPosition == 0 && Math.abs(enemyTower[0]-kingPosition)<= 1) {
+                        System.out.println("King has been killed by enemy tower");
+                        break outerloop;
+                    } else if (enemyTower[1] - kingPosition > 0) {
+                        enemyTower[1]--;
+                    } else {
+                        enemyTower[1]++;
+                    }
                 }
-                else if (towerX == i && towerY == j){
-                    System.out.print(YELLOW_BOLD + " T " + RESET);
+                if (enemyTower[0] == kingPosition && enemyTower[1] == 0) {
+                    System.out.println("King has been killed by enemy");
+                    break;
                 }
-                else {
-                    System.out.print(" - ");
+                System.out.print("   ");
+                for (int i = 0; i <= tableDimensions; i++) {
+                    if (i <= 9) {
+                        System.out.print(i + "  ");
+                    } else {
+                        System.out.print(i + " ");
+                    }
+                }
+                System.out.println();
+
+                for (int i = 0; i <= tableDimensions; i++) {
+                    if (i <= 9) {
+                        System.out.print(" " + i);
+                    } else {
+                        System.out.print(i);
+                    }
+
+                    for (int j = 0; j <= tableDimensions; j++) {
+                        if (kingPosition == j && kingPosition == i) {
+                            System.out.print(GREEN_BOLD + " C " + RESET);
+                        } else if (towerX == i && towerY == j) {
+                            System.out.print(YELLOW_BOLD + " T " + RESET);
+                        } else if (enemyTower[0] == i && enemyTower[1] == j) {
+                            System.out.print(RED_BOLD + " E " + RESET);
+                        } else {
+                            System.out.print(" - ");
+                        }
+                    }
+                    System.out.println();
+                }
+                for (int i = 0; i <= 1e9; i++) {
                 }
             }
-            System.out.println();
-        }
 
-        while (true) {
+        /* while (true) {
             boolean borderOnX = random.nextBoolean();
             boolean attackTower = random.nextBoolean();
-
-            int enemy
-
-            if(borderOnX){
-
+            int[] enemyTower = {0, 0};
+            if (borderOnX) {
+                enemyTower[0] = tableDimensions;
+                enemyTower[1] = random.nextInt(0, tableDimensions);
             }
 
-            System.out.println("Enemies");
+            if(!borderOnX){
+                enemyTower[0] = random.nextInt(0, tableDimensions);
+                enemyTower[1] = tableDimensions;
+            }
+
+            System.out.println("Enemy position (x, y): " + enemyTower[0] + " " + enemyTower[1]);
+
+        } */
 
         }
-
     }
-}
