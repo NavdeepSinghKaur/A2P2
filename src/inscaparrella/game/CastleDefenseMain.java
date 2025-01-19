@@ -9,24 +9,16 @@ import java.util.Scanner;
 *   -
 * */
 
-/*
-    LEFT TO DO:
-        FIX BUGS
- */
 
 public class CastleDefenseMain {
     private static final Scanner sc = new Scanner(System.in);
     private static final Random random = new Random();
-
-
     public static final String RESET = "\033[0m";          // Text Reset
     public static final String RED_BOLD = "\033[1;31m";    // RED
     public static final String GREEN_BOLD = "\033[1;32m";  // GREEN
     public static final String YELLOW_BOLD = "\033[1;33m"; // YELLOW
 
     private static void game(int[] kingPosition, int tableDimensions, int[][] enemyTower, int enemyTowerLives, int enemiesAtStartup, int maxEnemies, int towerLives) {
-        boolean differentCoodrinates = false;
-        boolean noEnemiesToShow = false;
         boolean reservedSpace = false;
         boolean stopGame = false;
         boolean exitTowerLoop;
@@ -34,7 +26,7 @@ public class CastleDefenseMain {
         int enemiesToShow = 0;
         int iterations = 0; // used inseide main while loop (!stopGame loop)
 
-        for (int i = 0; i < towerPosition.length; i++) { // look if enemy life changes by difficulty
+        for (int i = 0; i < towerPosition.length; i++) {
             towerPosition[i][2] = towerLives;
         }
 
@@ -54,134 +46,139 @@ public class CastleDefenseMain {
                 for (int i = 0; i < enemiesToShow; i++) {
                     enemyTower[i][3] = 1;
                 }
-//          // BOARD PRINTING ALGORITTHM
+            // BOARD PRINTING ALGORITTHM
             boardPrintingAlgorithm(enemyTower, tableDimensions, enemiesToShow, reservedSpace, towerPosition, kingPosition);
 
-                stopGame = enemyMovementAlgorithm(enemiesToShow, enemyTower, noEnemiesToShow, stopGame, towerPosition, kingPosition, iterations);
+            // Enemy movement algorith m
+            stopGame = enemyMovementAlgorithm(enemiesToShow, enemyTower, towerPosition, kingPosition, iterations);
 
-                // TOWER
-                exitTowerLoop = false;
-                String outOrTower;
-                while (!exitTowerLoop) {
-                    String[] coordinates;
-                    String towerInput;
-                    System.out.println("q -- Sortir | t -- Torre: ");
-                    outOrTower = sc.nextLine();
+            // TOWER
+            exitTowerLoop = false;
+            String outOrTower;
+            while (!exitTowerLoop) {
+                String[] coordinates;
+                String towerInput;
+                System.out.println("q -- Sortir | t -- Torre: ");
+                outOrTower = sc.nextLine();
 
-                    // Calculate for valid/invalid input when writing tower axis
-                    if (outOrTower.equalsIgnoreCase("t")) {
-                        System.out.println("Introdueix les coordenades de la torre (fila, columna): ");
-                        towerInput = sc.nextLine();
-                        coordinates = towerInput.split(", ");
-                        int i = 0;
-                        boolean iterateOverToverPosition = true;
-                        boolean showWarning = false;
+                // Calculate for valid/invalid input when writing tower axis
+                if (outOrTower.equalsIgnoreCase("t")) {
+                    System.out.println("Introdueix les coordenades de la torre (fila, columna): ");
+                    towerInput = sc.nextLine();
+                    coordinates = towerInput.split(" ");
+                    int i = 0;
+                    boolean iterateOverTowerPosition = true;
+                    boolean invalidPosition = false;
 
-                        while (i < towerPosition.length && iterateOverToverPosition) {
-
-                            if (towerPosition[i][3] == 0) {
-                                towerPosition[i][0] = Integer.parseInt(coordinates[0].trim());
-                                towerPosition[i][1] = Integer.parseInt(coordinates[1].trim());
-                                for (int[] j:towerPosition) {
-                                    if (towerPosition[i][0] == j[0] && towerPosition[i][1] == j[1] && j[3] > 0) {
-                                        System.out.println("La torre està sobre una altra torre");
-                                    }
-                                }
-                                for (int[] j:enemyTower) {
-                                    if (towerPosition[i][0] == j[0] && towerPosition[i][1] == j[1])
-                                        showWarning = true;
-                                }
-                                if (showWarning) {
-                                    System.out.println("La torre està sobre una posició ocupada");
-                                }
-                                if ((towerPosition[i][0] >= tableDimensions || towerPosition[i][0] <= 0) || (towerPosition[i][1] >= tableDimensions || towerPosition[i][1] <= 0)) {
-                                    System.out.println("La posició de la torre no pot estar als MARGES ni a l'exterior del taulell de joc, torna a intentar-ho");
-                                } else if (towerPosition[i][0] == kingPosition[0] && towerPosition[i][1] == kingPosition[0]) {
-                                    System.out.println("La torre està sobre el castell, torna a intentar-ho");
-                                } else {
-                                    towerPosition[i][3] = 1;
-                                    iterateOverToverPosition = false;
-                                    exitTowerLoop = true;
-                                }
+                    while (i < towerPosition.length && iterateOverTowerPosition) {
+                        if (towerPosition[i][3] == 0) {
+                            towerPosition[i][0] = Integer.parseInt(coordinates[0].trim());
+                            towerPosition[i][1] = Integer.parseInt(coordinates[1].trim());
+                            for (int[] j:towerPosition) {
+                                if (towerPosition[i][0] == j[0] && towerPosition[i][1] == j[1] && j[3] > 0)
+                                    invalidPosition = true;
                             }
-                            i++;
+                            for (int[] j:enemyTower) {
+                                if (towerPosition[i][0] == j[0] && towerPosition[i][1] == j[1])
+                                    invalidPosition = true;
+                            }
+                            if ((towerPosition[i][0] >= tableDimensions || towerPosition[i][0] <= 0) || (towerPosition[i][1] >= tableDimensions || towerPosition[i][1] <= 0)) {
+                                System.out.println("ERROR: La posició de la torre no pot estar als MARGES ni a l'exterior del taulell de joc, torna a intentar-ho");
+                                invalidPosition = true;
+                                iterateOverTowerPosition = false;
+                            }
+                            else if (towerPosition[i][0] == kingPosition[0] && towerPosition[i][1] == kingPosition[0]) {
+                                System.out.println("ERROR: La torre està sobre el castell, torna a intentar-ho.");
+                                invalidPosition = true;
+                                iterateOverTowerPosition = false;
+                            }
+                            else if (!invalidPosition){
+                                towerPosition[i][3] = 1;
+                                iterateOverTowerPosition = false;
+                                exitTowerLoop = true;
+                            }
+                            else {
+                                System.out.println("ERROR: La torre està sobre una posició ocupada.");
+                                iterateOverTowerPosition = false;
+                            }
                         }
-                    } else if (outOrTower.equalsIgnoreCase("q")) {
-                        exitTowerLoop = true;
-                        stopGame = true;
-                        difficultyMenu();
-                    } else {
-                        System.out.println("Insert a valid command.");
+                        i++;
                     }
                 }
-            }
-        }
-    
-    private static boolean enemyMovementAlgorithm(int enemiesToShow, int[][] enemyTower, boolean noEnemiesToShow, boolean stopGame, int[][] towerPosition, int[] kingPosition, int
-                                                   iterations) {
-
-            int kingLife;
-            for (int i = 0; i < enemiesToShow; i++) {
-                noEnemiesToShow = true;
-                int j = 0;
-                while (j< enemyTower.length) {
-                    noEnemiesToShow = false;
-                    j++;
-                }
-
-                if (noEnemiesToShow) {
-                    stopGame = true;
-                    System.out.println("Has guanyat, no hi han més enemics.");
-                }
-                if (enemyTower[i][2] > 0) {
-                    // Enemy will look for the nearest tower, using an iterator and variable, if next iteratino position is lower, enemy will switch tower, finding the nearest
-                    int towerToLock = getTowerToLock(towerPosition, enemyTower, i);
-
-                    if (Math.abs(kingPosition[0] * kingPosition[0] - enemyTower[i][0] * enemyTower[i][1]) <= Math.abs(towerPosition[towerToLock][0] * towerPosition[towerToLock][1] - enemyTower[i][0] * enemyTower[i][1])) {
-                        System.out.println("FIRST CONDITION");
-                        if (enemyTower[i][0] == kingPosition[0] && Math.abs(enemyTower[i][1] - kingPosition[0]) == 1 || enemyTower[i][1] == kingPosition[0] && Math.abs(enemyTower[i][0] - kingPosition[0]) == 1) {
-                            // ENEMY AND KING LOSE THEIR LIVES
-                            kingLife = kingPosition[1];
-                            kingPosition[1] = kingLife - enemyTower[i][2];
-                            enemyTower[i][2] = enemyTower[i][2] - kingLife;
-                        }
-                        else if (enemyTower[i][0] > kingPosition[0] && Math.abs(enemyTower[i][0] - kingPosition[0]) > 1)
-                            enemyTower[i][0]--;
-
-                        else if (enemyTower[i][0] < kingPosition[0] && Math.abs(enemyTower[1][0] - kingPosition[0]) > 1)
-                            enemyTower[i][0]++;
-
-                        else if (enemyTower[i][1] > kingPosition[0])
-                            enemyTower[i][1]--;
-
-                        else if (enemyTower[i][1] < kingPosition[0])
-                            enemyTower[i][1]++;
-                    }
-
-                    else if (Math.abs(enemyTower[i][0] - towerPosition[towerToLock][0]) <= 1 && Math.abs(enemyTower[i][1] - towerPosition[towerToLock][1]) <= 1 && iterations > 1) {
-                        System.out.println("Les defenses han atacat!");
-                        enemyTower[i][2] = enemyTower[i][2] - towerPosition[i][2];
-                    }
-                    else if (enemyTower[i][0] > towerPosition[towerToLock][0])
-                        enemyTower[i][0]--;
-
-                    else if (enemyTower[i][0] < towerPosition[towerToLock][0])
-                        enemyTower[i][0]++;
-
-                    else if (enemyTower[i][1] > towerPosition[towerToLock][0])
-                        enemyTower[i][1]--;
-
-                    else if (enemyTower[i][1] < towerPosition[towerToLock][0])
-                        enemyTower[i][1]++;
-                }
-                if (kingPosition[1] < 0) {
-                    System.out.println("El castell ha caigut. Has perdut.");
+                else if (outOrTower.equalsIgnoreCase("q")) {
+                    exitTowerLoop = true;
                     stopGame = true;
                     difficultyMenu();
                 }
+                else
+                    System.out.println("ERROR: Inserta \"q\" o \"t\".");
             }
-            return stopGame;
         }
+    }
+    
+    private static boolean enemyMovementAlgorithm(int enemiesToShow, int[][] enemyTower, int[][] towerPosition, int[] kingPosition, int
+                                                   iterations) {
+        boolean returnValue = false;
+        int kingLife;
+        for (int i = 0; i < enemiesToShow; i++) {
+            boolean noEnemiesToShow = true;
+            for (int[] k:enemyTower) {
+                if (k[2] > 0)
+                    noEnemiesToShow = false;
+            }
+
+            if (noEnemiesToShow) {
+                returnValue = true;
+                System.out.println("EL CASTELL HA SOBREVISCUT L'ATAC!");
+            }
+            if (enemyTower[i][2] > 0) {
+                // Enemy will look for the nearest tower, using an iterator and variable, if next iteratino position is lower, enemy will switch tower, finding the nearest
+                int towerToLock = getTowerToLock(towerPosition, enemyTower, i);
+
+                if (Math.abs(kingPosition[0] * kingPosition[0] - enemyTower[i][0] * enemyTower[i][1]) <= Math.abs(towerPosition[towerToLock][0] * towerPosition[towerToLock][1] - enemyTower[i][0] * enemyTower[i][1])) {
+                    if (enemyTower[i][0] == kingPosition[0] && Math.abs(enemyTower[i][1] - kingPosition[0]) == 1 || enemyTower[i][1] == kingPosition[0] && Math.abs(enemyTower[i][0] - kingPosition[0]) == 1) {
+                        // ENEMY AND KING LOSE THEIR LIVES
+                        kingLife = kingPosition[1];
+                        kingPosition[1] = kingLife - enemyTower[i][2];
+                        enemyTower[i][2] = enemyTower[i][2] - kingLife;
+                    }
+                    else if (enemyTower[i][0] > kingPosition[0] && Math.abs(enemyTower[i][0] - kingPosition[0]) > 1)
+                        enemyTower[i][0]--;
+
+                    else if (enemyTower[i][0] < kingPosition[0] && Math.abs(enemyTower[1][0] - kingPosition[0]) > 1)
+                        enemyTower[i][0]++;
+
+                    else if (enemyTower[i][1] > kingPosition[0])
+                        enemyTower[i][1]--;
+
+                    else if (enemyTower[i][1] < kingPosition[0])
+                        enemyTower[i][1]++;
+                }
+
+                else if (Math.abs(enemyTower[i][0] - towerPosition[towerToLock][0]) <= 1 && Math.abs(enemyTower[i][1] - towerPosition[towerToLock][1]) <= 1 && iterations > 1) {
+                    System.out.println("Les defenses han atacat!");
+                    enemyTower[i][2] = enemyTower[i][2] - towerPosition[i][2];
+                }
+                else if (enemyTower[i][0] > towerPosition[towerToLock][0])
+                    enemyTower[i][0]--;
+
+                else if (enemyTower[i][0] < towerPosition[towerToLock][0])
+                    enemyTower[i][0]++;
+
+                else if (enemyTower[i][1] > towerPosition[towerToLock][0])
+                    enemyTower[i][1]--;
+
+                else if (enemyTower[i][1] < towerPosition[towerToLock][0])
+                    enemyTower[i][1]++;
+            }
+            if (kingPosition[1] < 0) {
+                System.out.println("El castell ha caigut. Has perdut.");
+                returnValue = true;
+                difficultyMenu();
+            }
+        }
+        return returnValue;
+    }
     private static void boardPrintingAlgorithm(int[][] enemyTower, int tableDimensions, int enemiesToShow, boolean reservedSpace, int[][] towerPosition, int[] kingPosition) {
 
         System.out.print("   ");
@@ -223,9 +220,9 @@ public class CastleDefenseMain {
                         System.out.print(GREEN_BOLD + " C " + RESET);
                     else
                         System.out.print(" - ");
-                } else {
-                    reservedSpace = false;
                 }
+                else
+                    reservedSpace = false;
             }
             System.out.print("     ");
             for (int j = 0; j <= tableDimensions; j++) {
@@ -247,15 +244,14 @@ public class CastleDefenseMain {
                     else
                         System.out.print(" 0 ");
                 }
-                else {
+                else
                     reservedSpace = false;
-                }
             }
             System.out.println();
         }
         System.out.println();
-
     }
+
     private static int getTowerToLock(int[][] towerPosition, int[][] enemyTower, int i) {
         int towerToLock = 0;
         for (int j = 0; j < towerPosition.length; j++) {
@@ -270,7 +266,7 @@ public class CastleDefenseMain {
         return towerToLock;
     }
 
-    private static int[][] enemyPositionInitalizer(int[][] enemyTower, int tableDimensions, int enemyTowerLives) {
+    private static void enemyPositionInitalizer(int[][] enemyTower, int tableDimensions, int enemyTowerLives) {
         boolean differentCoodrinates = false;
         while (!differentCoodrinates) {
             for (int j = 0; j < enemyTower.length; j++) {
@@ -307,10 +303,8 @@ public class CastleDefenseMain {
                     }
                 }
             }
-
             differentCoodrinates = true;
         }
-        return enemyTower;
     }
 
     public static void difficultyMenu() {
@@ -319,7 +313,6 @@ public class CastleDefenseMain {
         int[] kingPosition = {tableDimensions / 2, 0};
         boolean exitInitialMenu = false;
         int menuOption;
-        int difficulty = 0;
 
         while(!exitInitialMenu) {
             System.out.println("""
@@ -331,79 +324,69 @@ public class CastleDefenseMain {
 
             System.out.print("Entrada: ");
             menuOption = sc.nextInt();
+            sc.nextLine();
+
             switch (menuOption) {
                 case 0:
                     System.out.println("Has elegit la opció: " + menuOption + " El joc es tancarà inmediatament.");
                     sc.close();
                     exitInitialMenu = true;
                     break;
+
                 case 1:
                     System.out.println("Has elegit la opció: " + menuOption + " jugaràs en mode fàcil.");
-                    difficulty = 1;
                     exitInitialMenu = true;
+                    kingPosition[1] = 10;
+                    game(
+                        kingPosition,
+                        tableDimensions,
+                        new int[6][3], // enemyTower
+                        1, // enemyTowerLives
+                        3, // enemiesAtStartup
+                        6, // maxEnemies
+                        3 // towerLives
+                    );
                     break;
+
                 case 2:
                     System.out.println("Has elegit la opció: " + menuOption + " jugaràs en mode normal.");
-                    difficulty = 2;
                     exitInitialMenu = true;
+                    kingPosition[1] = 7;
+                    game(
+                        kingPosition,
+                        tableDimensions,
+                        new int[9][3], // enemyTower
+                        2, // enemyTowerLives
+                        random.nextInt(4, 7), // enemiesAtStartup
+                        9, // maxEnemies
+                        2 // towerLives
+                    );
                     break;
+
                 case 3:
                     System.out.println("Has elegit la opció: " + menuOption + " jugaràs en mode difícil.");
-                    difficulty = 3;
                     exitInitialMenu = true;
+                    kingPosition[1] = 5;
+                    game(
+                        kingPosition,
+                        tableDimensions,
+                        new int[9][3], // enemyTower
+                        3, // enemyTowerLives
+                        random.nextInt(4, 7), // enemiesAtStartup
+                        9, // maxEnemies
+                        1 // towerLives
+                    );
                     break;
+
                 default:
                     System.out.println("Opció invàlida, torna a intentar-ho.");
             }
         }
-
-        switch (difficulty) {
-
-            case 1:
-                kingPosition[1] = 10;
-
-                game(
-                    kingPosition,
-                    tableDimensions,
-                    new int[6][3], // enemyTower
-                    1, // enemyTowerLives
-                    3, // enemiesAtStartup
-                    6, // maxEnemies
-                    3 // towerLives
-                );
-                break;
-
-            case 2:
-                kingPosition[1] = 7;
-                game(
-                    kingPosition,
-                    tableDimensions,
-                    new int[9][3], // enemyTower
-                    3, // enemyTowerLives
-                    random.nextInt(4, 7), // enemiesAtStartup
-                    9, // maxEnemies
-                    1 // towerLives
-                );
-                break;
-
-            case 3:
-                kingPosition[1] = 5;
-                game(
-                    kingPosition,
-                    tableDimensions,
-                    new int[9][3], // enemyTower
-                    3, // enemyTowerLives
-                    random.nextInt(4, 7), // enemiesAtStartup
-                    9, // maxEnemies
-                    1 // towerLives
-                );
-                break;
-
-
-        }
     }
 
     public static void main(String[] args) {
+
+
         difficultyMenu();
     }
 }
